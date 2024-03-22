@@ -1,0 +1,28 @@
+# Files created by OS
+#
+.DS_Store
+Desktop.ini
+
+# Files created by IDE
+#
+/.idea/
+/.vscode/
+
+/*.code-workspace
+
+# Generated & compiled files
+#
+__pycache__/
+*.pyc
+
+# Environmental files
+#
+.env
+
+# Exported games
+#
+*.zip
+
+# Not ignored
+#
+!.gitkeep
