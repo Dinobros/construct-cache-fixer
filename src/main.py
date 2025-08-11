@@ -22,13 +22,15 @@ _logger = logging.getLogger()
 _logger.setLevel(logging.INFO)
 
 ASSETS_PATTERNS = [
-    "*.css",
-    "*.js",
-    "*.json",
-    "*.png",
-    "*.ttf",
-    "*.wasm",
-    "*.webm"
+    '*.css',
+    '*.js',
+    '*.json',
+    '*.png',
+    '*.webp',
+    '*.avif',
+    # '*.ttf',
+    '*.wasm',
+    # '*.webm'
 ]
 
 
@@ -153,7 +155,8 @@ def search_for_asset_uses(folder_path: Path, asset: Path) -> Generator[Path, Non
                     break
 
     if not found:
-        raise FileNotFoundError(f"The asset '{asset}' was not found in the source code.")
+        if asset.name not in ['arrows_prevent_scroll.js']:
+            raise FileNotFoundError(f"The asset '{asset}' was not found in the source code.")
 
 
 def replace_asset_uses(source_file: Path, old_asset: Path, new_asset: Path) -> None:
