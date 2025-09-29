@@ -1,4 +1,4 @@
-# Construct Cache Fixer
+# Construct Cache Fixer 🗃️
 
 A script to fix the cache problems for Construct 3 exported games.
 
