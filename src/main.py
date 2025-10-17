@@ -28,9 +28,9 @@ ASSETS_PATTERNS = [
     '*.png',
     '*.webp',
     '*.avif',
-    # '*.ttf',
+    '*.ttf',
     '*.wasm',
-    # '*.webm'
+    '*.webm'
 ]
 
 
@@ -135,9 +135,6 @@ def search_for_asset_uses(folder_path: Path, asset: Path) -> Generator[Path, Non
         *folder_path.rglob("*.json")
     ]
 
-    _logger.debug("Looking for the uses of the asset: '%s'", asset)
-
-    found: bool = False
     for source_file in source_files:
         asset_name = asset.stem if asset.suffix == '.webm' else asset.name
         asset_regex = re.compile(f"\\W{re.escape(asset_name)}\\W")
@@ -148,15 +145,9 @@ def search_for_asset_uses(folder_path: Path, asset: Path) -> Generator[Path, Non
             for line in file.readlines():
                 if asset_regex.search(line):
                     _logger.debug("Found a use of the asset '%s' in the source file: '%s'", asset, source_file)
-    
-                    found = True
 
                     yield source_file
                     break
-
-    if not found:
-        if asset.name not in ['arrows_prevent_scroll.js']:
-            raise FileNotFoundError(f"The asset '{asset}' was not found in the source code.")
 
 
 def replace_asset_uses(source_file: Path, old_asset: Path, new_asset: Path) -> None:
@@ -181,7 +172,8 @@ def replace_asset_uses(source_file: Path, old_asset: Path, new_asset: Path) -> N
     old_asset_name = old_asset.stem if old_asset.suffix == '.webm' else old_asset.name
     new_asset_name = new_asset.stem if new_asset.suffix == '.webm' else new_asset.name
 
-    content = content.replace(old_asset_name, new_asset_name)
+    asset_regex = re.compile(f"(\\W){re.escape(old_asset_name)}(\\W)")
+    content = asset_regex.sub(rf"\1{new_asset_name}\2", content)
 
     with open(source_file, 'w', encoding='utf-8') as file:
         file.write(content)
@@ -214,13 +206,18 @@ def main() -> None:
     for asset in assets:
         _logger.debug("Looking for the uses of the asset: '%s'", asset)
 
-        asset_uses = search_for_asset_uses(extract_path, asset)
+        asset_uses = list(search_for_asset_uses(extract_path, asset))
+        if not asset_uses:
+            _logger.warning("The asset '%s' was not found in the source code.", asset)
+
+            continue
+
         new_asset = rename_asset(asset)
 
         for asset_use in asset_uses:
             replace_asset_uses(asset_use, asset, new_asset)
 
-        _logger.info("Renaming the asset '%s' to the new asset: '%s'", asset, new_asset.name)
+        _logger.debug("Renaming the asset '%s' to the new asset: '%s'", asset, new_asset.name)
         asset.rename(new_asset)
 
     _logger.info("The script finished its execution successfully.")
