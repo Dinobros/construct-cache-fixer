@@ -172,7 +172,11 @@ def replace_asset_uses(source_file: Path, old_asset: Path, new_asset: Path) -> N
     new_asset_name = new_asset.stem if new_asset.suffix == '.webm' else new_asset.name
 
     asset_regex = re.compile(f"(\\W){re.escape(old_asset_name)}(\\W)")
-    content = asset_regex.sub(rf"\1{new_asset_name}\2", content)
+
+    def replacer(match: re.Match) -> str:
+        return f"{match.group(1)}{new_asset_name}{match.group(2)}"
+
+    content = asset_regex.sub(replacer, content)
 
     with open(source_file, 'w', encoding='utf-8') as file:
         file.write(content)
